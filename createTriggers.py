@@ -3,12 +3,13 @@ import sys
 import psycopg2
 from lxml import etree
 
+operation=sys.argv[4]
 conn_string=sys.argv[3] # "host='localhost' dbname='my_database' user='postgres' password='secret'"
 schema=sys.argv[2]
 ns={'ns0':'http://www.deegree.org/datasource/feature/sql'}
 
 def createChangelog():
-  return """CREATE TABLE %s.endringslogg
+  return """CREATE TABLE IF NOT EXISTS %s.endringslogg
 (
   tabell character varying,
   type character(1),
@@ -29,6 +30,9 @@ def createTableTrigger(name, table):
   ON %s.%s
   FOR EACH ROW
   EXECUTE PROCEDURE %s.endringslogg_func('%s');""" % (table, schema, table, schema, name)
+
+def dropTableTrigger(name, table):
+  return """DROP TRIGGER IF EXISTS %s_endringslogg ON %s.%s""" % (table, schema, table)
 
 def createTrigger():
   return """CREATE OR REPLACE FUNCTION %s.endringslogg_func()
@@ -68,20 +72,45 @@ ALTER FUNCTION %s.endringslogg_func()
   OWNER TO postgres;""" % (schema, schema, schema, schema, schema)
 
 def executeSql(sql):
+  print(sql)
+  return
   print "Connecting to database\n	->%s" % (conn_string)
   conn = psycopg2.connect(conn_string)
   cursor = conn.cursor()
   cursor.execute(sql)
 
+def createAll():
+  print("Creating change-table")
+  executeSql(createChangelog())
+  print("Creating trigger-function")
+  executeSql(createTrigger())
+
+def dropTriggers():
+  for nameTable in getMappings():
+    executeSql(dropTableTrigger(nameTable[0], nameTable[1]))
+  
+def createTriggers():
+  for nameTable in getMappings():
+    executeSql(createTableTrigger(nameTable[0], nameTable[1]))
+
+def getMappings():
+  mappings=[]
+  for featureType in tree.xpath('//ns0:FeatureTypeMapping', namespaces=ns):
+    name=featureType.get('name').split(':')[1]
+    table=featureType.get('table')
+    print("Creating trigger for featureType " + name)
+    mappings.append([ name, table ])
+  return mappings
+    
+
 tree = etree.parse(open(sys.argv[1])) # read deegree featureStore
 
-print("Creating change-table")
-executeSql(createChangelog())
-print("Creating trigger-function")
-executeSql(createTrigger())
+if(operation == 'init'):
+  createAll()
+elif(operation == 'stop'):
+  dropTriggers()
+elif(operation == 'start'):
+  createTriggers()
+else:
+  print("Valid operations are init, stop, start")
 
-for featureType in tree.xpath('//ns0:FeatureTypeMapping', namespaces=ns):
-  name=featureType.get('name').split(':')[1]
-  table=featureType.get('table')
-  print("Creating trigger for featureType " + name)
-  executeSql(createTableTrigger(name, table))
