@@ -75,7 +75,9 @@ def executeSql(sql):
 
 tree = etree.parse(open(sys.argv[1])) # read deegree featureStore
 
+print("Creating change-table")
 executeSql(createChangelog())
+print("Creating trigger-function")
 executeSql(createTrigger())
 
 for featureType in tree.xpath('//ns0:FeatureTypeMapping', namespaces=ns):
