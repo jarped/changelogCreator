@@ -8,7 +8,7 @@ schema=sys.argv[2]
 ns={'ns0':'http://www.deegree.org/datasource/feature/sql'}
 
 def createChangelog():
-  return """CREATE TABLE """ + schema + """.endringslogg
+  return """CREATE TABLE %s.endringslogg
 (
   tabell character varying,
   type character(1),
@@ -20,23 +20,23 @@ def createChangelog():
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE """ + schema + """.endringslogg
-  OWNER TO postgres;"""
+ALTER TABLE %s.endringslogg
+  OWNER TO postgres;""" % (schema, schema)
 
 def createTableTrigger(name, table):
-  return """CREATE TRIGGER """ + table + """_endringslogg
+  return """CREATE TRIGGER %s_endringslogg
   AFTER INSERT OR UPDATE OR DELETE
-  ON """ + schema + """.""" + table + """
+  ON %s.%s
   FOR EACH ROW
-  EXECUTE PROCEDURE """ + schema + """.endringslogg_func('""" + name + """');"""
+  EXECUTE PROCEDURE %s.endringslogg_func('""" + name + """');""" % (table, schema, table, schema)
 
 def createTrigger():
-  return """CREATE OR REPLACE FUNCTION """ + schema + """.endringslogg_func()
+  return """CREATE OR REPLACE FUNCTION %s.endringslogg_func()
   RETURNS trigger AS
 $BODY$
 BEGIN
   IF (TG_OP = 'DELETE') THEN
-    INSERT INTO """ + schema + """.endringslogg 
+    INSERT INTO %s.endringslogg 
     SELECT 
     TG_ARGV[0],
     'D', 
@@ -44,7 +44,7 @@ BEGIN
     OLD.lokalid;
     RETURN OLD;
   ELSIF (TG_OP = 'UPDATE') THEN
-    INSERT INTO """ + schema + """.endringslogg 
+    INSERT INTO %s.endringslogg 
 		SELECT 
       TG_ARGV[0],
 			'U', 
@@ -52,7 +52,7 @@ BEGIN
 			NEW.lokalid;
     RETURN NEW;
   ELSIF (TG_OP = 'INSERT') THEN
-    INSERT INTO """ + schema + """.endringslogg 
+    INSERT INTO %s.endringslogg 
 		SELECT 
       TG_ARGV[0],
 			'I', 
@@ -64,8 +64,8 @@ BEGIN
 END;$BODY$
 LANGUAGE plpgsql VOLATILE
   COST 100;
-ALTER FUNCTION """ + schema + """.endringslogg_func()
-  OWNER TO postgres;"""
+ALTER FUNCTION %s.endringslogg_func()
+  OWNER TO postgres;""" % (schema, schema, schema, schema, schema)
 
 def executeSql(sql):
   print "Connecting to database\n	->%s" % (conn_string)
