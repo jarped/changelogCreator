@@ -2,4 +2,4 @@
 
 ## Usage
 
-createTriggers.py ${deegreeFeatureStore}.xml ${schema} ${connectionString}
+createTriggers.py ${deegreeFeatureStore}.xml ${schema} ${connectionString} [ init | stop | start ]
