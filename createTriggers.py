@@ -68,8 +68,6 @@ ALTER FUNCTION """ + schema + """.endringslogg_func()
   OWNER TO postgres;"""
 
 def executeSql(sql):
-  print(sql)
-  return
   print "Connecting to database\n	->%s" % (conn_string)
   conn = psycopg2.connect(conn_string)
   cursor = conn.cursor()
