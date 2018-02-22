@@ -28,7 +28,7 @@ def createTableTrigger(name, table):
   AFTER INSERT OR UPDATE OR DELETE
   ON %s.%s
   FOR EACH ROW
-  EXECUTE PROCEDURE %s.endringslogg_func('""" + name + """');""" % (table, schema, table, schema)
+  EXECUTE PROCEDURE %s.endringslogg_func('%s');""" % (table, schema, table, schema, name)
 
 def createTrigger():
   return """CREATE OR REPLACE FUNCTION %s.endringslogg_func()
