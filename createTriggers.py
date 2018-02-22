@@ -82,12 +82,14 @@ def createAll():
   executeSql(createChangelog())
   print("Creating trigger-function")
   executeSql(createTrigger())
+  print("Creating table-triggers")
+  createTableTriggers()
 
 def dropTriggers():
   for nameTable in getMappings():
     executeSql(dropTableTrigger(nameTable[0], nameTable[1]))
   
-def createTriggers():
+def createTableTriggers():
   for nameTable in getMappings():
     executeSql(createTableTrigger(nameTable[0], nameTable[1]))
 
@@ -115,7 +117,7 @@ elif(operation == 'stop'):
   dropTriggers()
   truncateTables()
 elif(operation == 'start'):
-  createTriggers()
+  createTableTriggers()
 else:
   print("Valid operations are init, stop, start")
 
