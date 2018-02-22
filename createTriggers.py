@@ -99,7 +99,13 @@ def getMappings():
     print("Creating trigger for featureType " + name)
     mappings.append([ name, table ])
   return mappings
-    
+
+def truncateTable(table):
+  return """TRUNCATE TABLE %s.%s""" % (schema, table)
+
+def truncateTables():
+  for nameTable in getMappings():
+    executeSql(truncateTable(nameTable[1]))
 
 tree = etree.parse(open(sys.argv[1])) # read deegree featureStore
 
@@ -107,6 +113,7 @@ if(operation == 'init'):
   createAll()
 elif(operation == 'stop'):
   dropTriggers()
+  truncateTables()
 elif(operation == 'start'):
   createTriggers()
 else:
