@@ -112,6 +112,7 @@ def truncateTable(table):
 def truncateTables():
   for nameTable in getMappings():
     executeSql(truncateTable(nameTable[1]))
+  executeSql(truncateTable("endringslogg"))
 
 tree = etree.parse(open(sys.argv[1])) # read deegree featureStore
 
