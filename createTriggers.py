@@ -77,6 +77,7 @@ def executeSql(sql):
   conn = psycopg2.connect(conn_string)
   cursor = conn.cursor()
   cursor.execute(sql)
+  conn.commit()
 
 def createAll():
   print("Creating change-table")
