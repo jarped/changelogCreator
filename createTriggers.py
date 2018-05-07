@@ -99,7 +99,10 @@ def getMappings():
     name=featureType.get('name').split(':')[1]
     table=featureType.get('table')
     print("Creating trigger for featureType " + name)
-    mappings.append([ name, table ])
+    if(table.contains('.')): 
+      mappings.append([ name, table.split('.')[1] ])
+    else: 
+      mappings.append([ name, table ])
   return mappings
 
 def truncateTable(table):
