@@ -100,7 +100,6 @@ def getMappings():
   for featureType in tree.xpath('//ns0:FeatureTypeMapping', namespaces=ns):
     name=featureType.get('name').split(':')[1]
     table=featureType.get('table')
-    print("Creating trigger for featureType " + name)
     if('.' in table): 
       mappings.append([ name, table.split('.')[1] ])
     else: 
