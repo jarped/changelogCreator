@@ -25,6 +25,7 @@ ALTER TABLE %s.endringslogg
   OWNER TO postgres;""" % (schema, schema)
 
 def createTableTrigger(name, table):
+  executeSql(dropTableTrigger(name, table))
   return """CREATE TRIGGER %s_endringslogg
   AFTER INSERT OR UPDATE OR DELETE
   ON %s.%s
