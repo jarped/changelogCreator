@@ -3,6 +3,7 @@ import sys
 import psycopg2
 from lxml import etree
 
+localid=sys.argv[5]
 operation=sys.argv[4]
 conn_string=sys.argv[3] # "host='localhost' dbname='my_database' user='postgres' password='secret'"
 schema=sys.argv[2]
@@ -46,7 +47,7 @@ BEGIN
     TG_ARGV[0],
     'D', 
     now(), 
-    OLD.lokalid;
+    OLD.%s;
     RETURN OLD;
   ELSIF (TG_OP = 'UPDATE') THEN
     INSERT INTO %s.endringslogg 
@@ -54,7 +55,7 @@ BEGIN
       TG_ARGV[0],
 			'U', 
 			now(), 
-			NEW.lokalid;
+			NEW.%s;
     RETURN NEW;
   ELSIF (TG_OP = 'INSERT') THEN
     INSERT INTO %s.endringslogg 
@@ -62,7 +63,7 @@ BEGIN
       TG_ARGV[0],
 			'I', 
 			now(), 
-			NEW.lokalid;
+			NEW.%s;
 		RETURN NEW;
 	END IF;
   RETURN NULL; -- result is ignored since this is an AFTER trigger
@@ -70,7 +71,7 @@ END;$BODY$
 LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION %s.endringslogg_func()
-  OWNER TO postgres;""" % (schema, schema, schema, schema, schema)
+  OWNER TO postgres;""" % (schema, schema, localid, schema, localid, schema, localid, schema)
 
 def executeSql(sql):
   print "Connecting to database\n	->%s" % (conn_string)
@@ -107,7 +108,7 @@ def getMappings():
   return mappings
 
 def truncateTable(table):
-  return """TRUNCATE TABLE %s.%s""" % (schema, table)
+  return """TRUNCATE TABLE %s.%s CASCADE""" % (schema, table)
 
 def truncateTables():
   for nameTable in getMappings():
